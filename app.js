@@ -9,8 +9,8 @@ const CONFIG = {
         brand: { title: 'Marke', type: 'discrete' },
         price: { title: 'Preis', type: 'range-dual', unit: '€' },
         rating: { title: 'Bewertung', type: 'range-min' },
-        'dimensions.height': { title: 'Höhe', type: 'range', unit: 'cm' },
-        'dimensions.width': { title: 'Breite', type: 'range', unit: 'cm' }
+        'dimensions.height': { title: 'Höhe', type: 'range', unit: 'cm', group: 'Abmessungen' },
+        'dimensions.width': { title: 'Breite', type: 'range', unit: 'cm', group: 'Abmessungen' }
     },
     searchableFields: ['title', 'description', 'category', 'brand'],
     itemsPerPage: 1000
@@ -233,24 +233,45 @@ class UIManager {
     }
 
     createFilters(aggregations) {
+        const groups = {};
+        
         Object.entries(CONFIG.facets).forEach(([key, cfg]) => {
-            const group = document.createElement('div');
-            group.className = 'filter-group';
-            
-            const label = document.createElement('label');
-            label.className = 'filter-label';
-            label.innerText = cfg.title;
-            group.appendChild(label);
+            const groupName = cfg.group || '_none';
+            if (!groups[groupName]) groups[groupName] = [];
+            groups[groupName].push({ key, cfg });
+        });
 
-            if (cfg.type === 'discrete') {
-                this.renderDiscreteFilter(key, cfg, aggregations[key], group);
-            } else if (cfg.type === 'range' || cfg.type === 'range-min') {
-                this.renderRangeFilter(key, cfg, group);
-            } else if (cfg.type === 'range-dual') {
-                this.renderDualRangeFilter(key, cfg, group);
+        Object.entries(groups).forEach(([groupName, facets]) => {
+            let container = this.elements.filtersContainer;
+
+            if (groupName !== '_none') {
+                const details = document.createElement('sl-details');
+                details.summary = groupName;
+                details.className = 'filter-group-container';
+                details.open = true;
+                this.elements.filtersContainer.appendChild(details);
+                container = details;
             }
 
-            this.elements.filtersContainer.appendChild(group);
+            facets.forEach(({ key, cfg }) => {
+                const group = document.createElement('div');
+                group.className = 'filter-group';
+                
+                const label = document.createElement('label');
+                label.className = 'filter-label';
+                label.innerText = cfg.title;
+                group.appendChild(label);
+
+                if (cfg.type === 'discrete') {
+                    this.renderDiscreteFilter(key, cfg, aggregations[key], group);
+                } else if (cfg.type === 'range' || cfg.type === 'range-min') {
+                    this.renderRangeFilter(key, cfg, group);
+                } else if (cfg.type === 'range-dual') {
+                    this.renderDualRangeFilter(key, cfg, group);
+                }
+
+                container.appendChild(group);
+            });
         });
     }
 

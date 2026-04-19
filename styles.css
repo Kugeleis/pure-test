@@ -104,6 +104,28 @@ sl-range.range-min-slider {
     box-shadow: 0 0 0 3px var(--sl-color-primary-300);
 }
 
+.filter-group-container {
+    margin-bottom: 24px;
+}
+
+.filter-group-container::part(base) {
+    background: transparent;
+    border: none;
+}
+
+.filter-group-container::part(header) {
+    padding: 0;
+    margin-bottom: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+    color: var(--sl-color-neutral-700);
+}
+
+.filter-group-container::part(content) {
+    padding: 0 0 0 10px;
+    border-left: 2px solid var(--sl-color-neutral-200);
+}
+
 .filter-group { margin-bottom: 24px; }
 .filter-label { font-weight: 600; margin-bottom: 8px; display: block; font-size: 0.9rem; }
 .range-display { font-size: 0.8rem; color: var(--sl-color-neutral-600); margin-top: 4px; text-align: right; }
