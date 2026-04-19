@@ -56,18 +56,11 @@ async function init() {
                         min: Math.floor(Math.min(...values)),
                         max: Math.ceil(Math.max(...values))
                     };
-                    
-                    if (cfg.type === 'range-dual') {
-                        state.filters[key] = [itemRanges[key].min, itemRanges[key].max];
-                    } else if (cfg.type === 'range-min') {
-                        state.filters[key] = itemRanges[key].min; // Default to lowest
-                    } else {
-                        state.filters[key] = itemRanges[key].max; // Default to highest (max filter)
-                    }
                 }
             }
         });
 
+        resetState();
         update();
     } catch (error) {
         console.error('Error during initialization:', error);
@@ -79,6 +72,54 @@ async function init() {
             </sl-alert>
         `;
     }
+}
+
+function resetState() {
+    state.query = '';
+    state.filters = {};
+    Object.entries(CONFIG.facets).forEach(([key, cfg]) => {
+        if (cfg.type === 'range-dual' && itemRanges[key]) {
+            state.filters[key] = [itemRanges[key].min, itemRanges[key].max];
+        } else if (cfg.type === 'range-min' && itemRanges[key]) {
+            state.filters[key] = itemRanges[key].min;
+        } else if (cfg.type === 'range' && itemRanges[key]) {
+            state.filters[key] = itemRanges[key].max;
+        } else if (cfg.type === 'discrete') {
+            state.filters[key] = [];
+        }
+    });
+}
+
+function syncUI() {
+    // Search input
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) searchInput.value = state.query;
+
+    // Dynamic filters
+    Object.entries(CONFIG.facets).forEach(([key, cfg]) => {
+        const val = state.filters[key];
+        if (cfg.type === 'discrete') {
+            const select = document.getElementById(`filter-${key}`);
+            if (select) select.value = val;
+        } else if (cfg.type === 'range' || cfg.type === 'range-min') {
+            const slRange = document.getElementById(`filter-${key}`);
+            const display = document.getElementById(`display-${key}`);
+            if (slRange) slRange.value = val;
+            if (display) {
+                const prefix = cfg.type === 'range-min' ? 'Mind. ' : 'Max. ';
+                display.innerText = `${prefix}${val}${cfg.unit || ''}`;
+            }
+        } else if (cfg.type === 'range-dual') {
+            const sliderDiv = document.getElementById(`filter-${key}`);
+            const display = document.getElementById(`display-${key}`);
+            if (sliderDiv && sliderDiv.noUiSlider) {
+                sliderDiv.noUiSlider.set(val);
+            }
+            if (display) {
+                display.innerText = `${val[0]}${cfg.unit || ''} - ${val[1]}${cfg.unit || ''}`;
+            }
+        }
+    });
 }
 
 function renderFilters(searchResult) {
@@ -146,7 +187,8 @@ function renderFilters(searchResult) {
                 const display = document.createElement('div');
                 display.className = 'range-display';
                 display.id = `display-${key}`;
-                display.innerText = `${range.min}${cfg.unit || ''} - ${range.max}${cfg.unit || ''}`;
+                const initialVal = state.filters[key];
+                display.innerText = `${initialVal[0]}${cfg.unit || ''} - ${initialVal[1]}${cfg.unit || ''}`;
                 group.appendChild(display);
 
                 setTimeout(() => {
@@ -220,9 +262,9 @@ function update() {
             if (type === 'range-dual' && Array.isArray(val)) {
                 return itemVal >= val[0] && itemVal <= val[1];
             } else if (type === 'range-min') {
-                return itemVal >= val; // Minimum filter
+                return itemVal >= val;
             } else {
-                return itemVal <= val; // Maximum filter (default)
+                return itemVal <= val;
             }
         });
     });
@@ -246,6 +288,12 @@ function update() {
 
 document.getElementById('search-input').addEventListener('sl-input', e => {
     state.query = e.target.value;
+    update();
+});
+
+document.getElementById('reset-button').addEventListener('click', () => {
+    resetState();
+    syncUI();
     update();
 });
 

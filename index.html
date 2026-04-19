@@ -27,7 +27,10 @@
 
 <div class="container">
     <aside id="filters-container">
-        <h2>Filter</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0;">Filter</h2>
+            <sl-button id="reset-button" variant="text" size="small">Zurücksetzen</sl-button>
+        </div>
         <sl-input id="search-input" label="Suche" placeholder="Name eingeben..." clearable style="margin-bottom: 24px;"></sl-input>
         <div id="dynamic-filters"></div>
     </aside>
