@@ -107,4 +107,20 @@ sl-range.range-min-slider {
 .filter-group { margin-bottom: 24px; }
 .filter-label { font-weight: 600; margin-bottom: 8px; display: block; font-size: 0.9rem; }
 .range-display { font-size: 0.8rem; color: var(--sl-color-neutral-600); margin-top: 4px; text-align: right; }
-h2 { font-size: 1.2rem; margin-top: 0; margin-bottom: 20px; }
+h2 { font-size: 1.2rem; margin: 0; }
+
+.filters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.search-field {
+    margin-bottom: 24px;
+}
+
+.results-info {
+    margin-bottom: 10px;
+    font-weight: bold;
+}
