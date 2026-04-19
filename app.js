@@ -6,7 +6,7 @@ const CONFIG = {
         category: { title: 'Kategorie', type: 'discrete' },
         brand: { title: 'Marke', type: 'discrete' },
         price: { title: 'Preis', type: 'range-dual', unit: '€' },
-        rating: { title: 'Bewertung', type: 'range' }
+        rating: { title: 'Bewertung', type: 'range-min' }
     }
 };
 
@@ -46,7 +46,7 @@ async function init() {
 
         // Auto-detect ranges
         Object.entries(CONFIG.facets).forEach(([key, cfg]) => {
-            if (cfg.type === 'range' || cfg.type === 'range-dual') {
+            if (cfg.type.startsWith('range')) {
                 const values = allItems
                     .map(item => parseFloat(item[key]))
                     .filter(v => !isNaN(v));
@@ -59,8 +59,10 @@ async function init() {
                     
                     if (cfg.type === 'range-dual') {
                         state.filters[key] = [itemRanges[key].min, itemRanges[key].max];
+                    } else if (cfg.type === 'range-min') {
+                        state.filters[key] = itemRanges[key].min; // Default to lowest
                     } else {
-                        state.filters[key] = itemRanges[key].max;
+                        state.filters[key] = itemRanges[key].max; // Default to highest (max filter)
                     }
                 }
             }
@@ -109,23 +111,27 @@ function renderFilters(searchResult) {
                     update();
                 });
                 group.appendChild(select);
-            } else if (cfg.type === 'range' && itemRanges[key]) {
+            } else if ((cfg.type === 'range' || cfg.type === 'range-min') && itemRanges[key]) {
                 const range = itemRanges[key];
                 const slRange = document.createElement('sl-range');
                 slRange.id = `filter-${key}`;
                 slRange.min = range.min;
                 slRange.max = range.max;
-                slRange.value = range.max;
+                slRange.value = state.filters[key];
                 slRange.step = 0.1;
+                if (cfg.type === 'range-min') {
+                    slRange.classList.add('range-min-slider');
+                }
 
                 const display = document.createElement('div');
                 display.className = 'range-display';
                 display.id = `display-${key}`;
-                display.innerText = `${range.max} ${cfg.unit || ''}`;
+                const prefix = cfg.type === 'range-min' ? 'Mind. ' : 'Max. ';
+                display.innerText = `${prefix}${state.filters[key]}${cfg.unit || ''}`;
 
                 slRange.addEventListener('sl-input', e => {
                     const val = parseFloat(e.target.value);
-                    display.innerText = `${val} ${cfg.unit || ''}`;
+                    display.innerText = `${prefix}${val}${cfg.unit || ''}`;
                     state.filters[key] = val; 
                     update();
                 });
@@ -143,7 +149,6 @@ function renderFilters(searchResult) {
                 display.innerText = `${range.min}${cfg.unit || ''} - ${range.max}${cfg.unit || ''}`;
                 group.appendChild(display);
 
-                // Initialize noUiSlider after a small delay to ensure element is in DOM
                 setTimeout(() => {
                     window.noUiSlider.create(sliderDiv, {
                         start: [range.min, range.max],
@@ -167,7 +172,6 @@ function renderFilters(searchResult) {
             dynamicFiltersContainer.appendChild(group);
         });
     } else {
-        // Precise update for counts only
         Object.entries(CONFIG.facets).forEach(([key, cfg]) => {
             if (cfg.type === 'discrete') {
                 const select = document.getElementById(`filter-${key}`);
@@ -188,7 +192,7 @@ function update() {
     if (!engine) return;
 
     const discreteFilters = {};
-    const rangeFilters = {};
+    const otherFilters = {};
     
     Object.entries(state.filters).forEach(([key, val]) => {
         if (CONFIG.facets[key].type === 'discrete') {
@@ -196,7 +200,7 @@ function update() {
                 discreteFilters[key] = val;
             }
         } else {
-            rangeFilters[key] = val;
+            otherFilters[key] = val;
         }
     });
 
@@ -207,15 +211,18 @@ function update() {
     });
 
     let filteredItems = searchResult.data.items || [];
-    Object.entries(rangeFilters).forEach(([key, val]) => {
+    Object.entries(otherFilters).forEach(([key, val]) => {
+        const type = CONFIG.facets[key].type;
         filteredItems = filteredItems.filter(item => {
             const itemVal = parseFloat(item[key]);
             if (isNaN(itemVal)) return true;
             
-            if (Array.isArray(val)) { // Dual range [min, max]
+            if (type === 'range-dual' && Array.isArray(val)) {
                 return itemVal >= val[0] && itemVal <= val[1];
-            } else { // Single range (max value)
-                return itemVal <= val;
+            } else if (type === 'range-min') {
+                return itemVal >= val; // Minimum filter
+            } else {
+                return itemVal <= val; // Maximum filter (default)
             }
         });
     });

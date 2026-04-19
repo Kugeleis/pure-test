@@ -69,6 +69,11 @@ sl-range {
     --thumb-size: 20px;
 }
 
+sl-range.range-min-slider {
+    --track-color-active: var(--sl-color-neutral-200);
+    --track-color-inactive: var(--sl-color-primary-600);
+}
+
 /* noUiSlider Styling */
 .noUi-target {
     background: var(--sl-color-neutral-200);
