@@ -1,5 +1,19 @@
 :root {
     --header-height: 60px;
+
+    /* Primary color palette (Shoelace tokens) */
+    /* Generated using https://shoelace.style/tokens/color#customizing-colors */
+    --sl-color-primary-50: #f0f9ff;
+    --sl-color-primary-100: #e0f2fe;
+    --sl-color-primary-200: #bae6fd;
+    --sl-color-primary-300: #7dd3fc;
+    --sl-color-primary-400: #38bdf8;
+    --sl-color-primary-500: #0ea5e9;
+    --sl-color-primary-600: #0284c7;
+    --sl-color-primary-700: #0369a1;
+    --sl-color-primary-800: #075985;
+    --sl-color-primary-900: #0c4a6e;
+    --sl-color-primary-950: #082f49;
 }
 body { 
     font-family: var(--sl-font-sans); 

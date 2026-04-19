@@ -43,10 +43,24 @@ Define your filters in the sidebar.
 
 Define the sorting criteria available to users. The `key` should match a field in your data, or use `relevance` for the default ItemsJS ranking.
 
-## Getting Started
+## Theming and Styling
 
-1. **Clone the repository.**
-2. **Customize `config.json`** to point to your data source and define your facets.
-3. **Open `index.html`** in a browser.
+### 1. Changing the Theme (Light/Dark)
+Shoelace supports light and dark themes out of the box. 
+- To change the theme, update the `<link>` in `index.html` to point to the desired theme (e.g., `dark.css` instead of `light.css`).
+- Update the `class` on the `<html>` tag to match: `<html class="sl-theme-dark">`.
 
-*Note: Due to browser security restrictions on ESM modules, you should use a local development server (like VS Code's "Live Server") rather than opening the file directly from the filesystem.*
+### 2. Customizing Colors
+You can easily change the primary color of the entire site by overriding Shoelace's design tokens in `styles.css`. To change the "brand" color, update the primary color palette in the `:root` block:
+
+```css
+:root {
+    --sl-color-primary-50: #f0f9ff;
+    --sl-color-primary-100: #e0f2fe;
+    /* ... update all weights from 50 to 950 ... */
+    --sl-color-primary-600: #0284c7; /* This is the main brand color */
+}
+```
+
+We recommend using a tool like the [Shoelace Palette Generator](https://shoelace.style/tokens/color#customizing-colors) to generate the full set of variables for your custom color.
+
