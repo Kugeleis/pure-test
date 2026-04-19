@@ -1,29 +1,6 @@
 import itemsjs from 'https://esm.sh/itemsjs@latest';
 
 /**
- * Configuration for the faceted search
- */
-const CONFIG = {
-    facets: {
-        category: { title: 'Kategorie', type: 'discrete' },
-        brand: { title: 'Marke', type: 'discrete' },
-        price: { title: 'Preis', type: 'range-dual', unit: '€', group: 'Preis' },
-        discountPercentage: { title: 'Rabatt', type: 'range-min', unit: '%', group: 'Preis' },
-        rating: { title: 'Bewertung', type: 'range-min' },
-        'dimensions.height': { title: 'Höhe', type: 'range', unit: 'cm', group: 'Abmessungen' },
-        'dimensions.width': { title: 'Breite', type: 'range', unit: 'cm', group: 'Abmessungen' }
-    },
-    sortOptions: [
-        { label: 'Name', key: 'title' },
-        { label: 'Preis', key: 'price' },
-        { label: 'Bewertung', key: 'rating' },
-        { label: 'Höhe', key: 'dimensions.height' },
-    ],
-    searchableFields: ['title', 'description', 'category', 'brand'],
-    itemsPerPage: 1000
-};
-
-/**
  * Utility to get value from nested object using dot notation
  */
 function getValueByPath(obj, path) {
@@ -34,16 +11,17 @@ function getValueByPath(obj, path) {
  * State Management
  */
 class SearchState {
-    constructor() {
+    constructor(config) {
+        this.config = config;
         this.query = '';
         this.filters = {};
         this.itemRanges = {};
-        this.sortBy = CONFIG.sortOptions[0].key;
+        this.sortBy = config.sortOptions[0].key;
         this.sortOrder = 'asc'; // 'asc' or 'desc'
     }
 
     calculateRanges(items) {
-        Object.entries(CONFIG.facets).forEach(([key, cfg]) => {
+        Object.entries(this.config.facets).forEach(([key, cfg]) => {
             if (cfg.type.startsWith('range')) {
                 const values = items
                     .map(item => parseFloat(item[key]))
@@ -62,10 +40,10 @@ class SearchState {
     reset() {
         this.query = '';
         this.filters = {};
-        this.sortBy = CONFIG.sortOptions[0].key;
+        this.sortBy = this.config.sortOptions[0].key;
         this.sortOrder = 'asc';
 
-        Object.entries(CONFIG.facets).forEach(([key, cfg]) => {
+        Object.entries(this.config.facets).forEach(([key, cfg]) => {
             if (cfg.type === 'discrete') {
                 this.filters[key] = [];
                 return;
@@ -102,16 +80,17 @@ class SearchState {
  * Search Engine Service
  */
 class SearchService {
-    constructor(items) {
+    constructor(items, config) {
         this.items = items;
+        this.config = config;
         this.engine = itemsjs(items, {
             aggregations: Object.fromEntries(
-                Object.entries(CONFIG.facets).map(([key, cfg]) => [
+                Object.entries(config.facets).map(([key, cfg]) => [
                     key, 
                     { title: cfg.title, size: 100 }
                 ])
             ),
-            searchableFields: CONFIG.searchableFields
+            searchableFields: config.searchableFields
         });
     }
 
@@ -120,7 +99,7 @@ class SearchService {
         const otherFilters = {};
 
         Object.entries(state.filters).forEach(([key, val]) => {
-            if (CONFIG.facets[key].type === 'discrete') {
+            if (this.config.facets[key].type === 'discrete') {
                 if (Array.isArray(val) && val.length > 0) {
                     discreteFilters[key] = val;
                 }
@@ -132,14 +111,14 @@ class SearchService {
         const searchResult = this.engine.search({
             query: state.query,
             filters: discreteFilters,
-            per_page: CONFIG.itemsPerPage
+            per_page: this.config.itemsPerPage
         });
 
         let filteredItems = searchResult.data.items || [];
 
         // Manual filtering for range facets (ItemsJS doesn't handle them natively in the same way)
         Object.entries(otherFilters).forEach(([key, val]) => {
-            const type = CONFIG.facets[key].type;
+            const type = this.config.facets[key].type;
             filteredItems = filteredItems.filter(item => {
                 const itemVal = parseFloat(item[key]);
                 if (isNaN(itemVal)) return true;
@@ -184,9 +163,10 @@ class SearchService {
  * UI Component Manager
  */
 class UIManager {
-    constructor(state, searchService) {
+    constructor(state, searchService, config) {
         this.state = state;
         this.searchService = searchService;
+        this.config = config;
 
         this.elements = {
             grid: document.getElementById('item-grid'),
@@ -194,11 +174,42 @@ class UIManager {
             filtersContainer: document.getElementById('dynamic-filters'),
             searchInput: document.getElementById('search-input'),
             resetButton: document.getElementById('reset-button'),
-            sortContainer: document.getElementById('sort-container')
+            sortContainer: document.getElementById('sort-container'),
+            logo: document.querySelector('.logo'),
+            navLinks: document.querySelector('.nav-links'),
+            filtersTitle: document.querySelector('.filters-header h2')
         };
 
+        this.initUI();
         this.initEventListeners();
         this.renderSortControls();
+    }
+
+    initUI() {
+        const { ui } = this.config;
+        if (!ui) return;
+
+        // Title and Logo
+        if (ui.title) document.title = ui.title;
+        if (ui.shopName && this.elements.logo) this.elements.logo.innerText = ui.shopName;
+
+        // Navigation
+        if (ui.navLinks && this.elements.navLinks) {
+            this.elements.navLinks.innerHTML = ui.navLinks.map(link => `
+                <sl-button variant="${link.variant || 'text'}" ${link.outline ? 'outline' : ''} href="${link.href}">
+                    ${link.label}
+                </sl-button>
+            `).join('');
+        }
+
+        // Labels
+        const { labels } = ui;
+        if (labels) {
+            if (labels.filtersTitle && this.elements.filtersTitle) this.elements.filtersTitle.innerText = labels.filtersTitle;
+            if (labels.resetButton && this.elements.resetButton) this.elements.resetButton.innerText = labels.resetButton;
+            if (labels.searchLabel && this.elements.searchInput) this.elements.searchInput.label = labels.searchLabel;
+            if (labels.searchPlaceholder && this.elements.searchInput) this.elements.searchInput.placeholder = labels.searchPlaceholder;
+        }
     }
 
     initEventListeners() {
@@ -220,7 +231,7 @@ class UIManager {
         const select = document.createElement('sl-select');
         select.id = 'sort-by-select';
         select.value = this.state.sortBy;
-        select.innerHTML = CONFIG.sortOptions.map(opt => `
+        select.innerHTML = this.config.sortOptions.map(opt => `
             <sl-option value="${opt.key}">${opt.label}</sl-option>
         `).join('');
 
@@ -254,6 +265,9 @@ class UIManager {
     }
 
     syncUI() {
+        const { ui } = this.config;
+        const labels = ui?.labels || {};
+
         // Search input
         if (this.elements.searchInput) {
             this.elements.searchInput.value = this.state.query;
@@ -267,7 +281,7 @@ class UIManager {
         if (sortOrderBtn) sortOrderBtn.innerHTML = this.getSortIcon();
 
         // Filters
-        Object.entries(CONFIG.facets).forEach(([key, cfg]) => {
+        Object.entries(this.config.facets).forEach(([key, cfg]) => {
             const val = this.state.filters[key];
             const el = document.getElementById(`filter-${key}`);
             const display = document.getElementById(`display-${key}`);
@@ -277,7 +291,7 @@ class UIManager {
             } else if (cfg.type === 'range' || cfg.type === 'range-min') {
                 if (el) el.value = val;
                 if (display) {
-                    const prefix = cfg.type === 'range-min' ? 'Mind. ' : 'Max. ';
+                    const prefix = cfg.type === 'range-min' ? (labels.rangeMinPrefix || 'Mind. ') : (labels.rangeMaxPrefix || 'Max. ');
                     display.innerText = `${prefix}${val}${cfg.unit || ''}`;
                 }
             } else if (cfg.type === 'range-dual') {
@@ -292,11 +306,14 @@ class UIManager {
     }
 
     renderProductCard(item) {
+        const { ui } = this.config;
+        const noBrandLabel = ui?.labels?.noBrand || 'Keine Marke';
+
         return `
             <div class="card">
                 <img src="${item.thumbnail}" alt="${item.title}" loading="lazy">
                 <div class="card-title">${item.title}</div>
-                <div class="card-meta">${item.brand || 'Keine Marke'} | ${item.category}</div>
+                <div class="card-meta">${item.brand || noBrandLabel} | ${item.category}</div>
                 <div class="card-price">${item.price}€</div>
                 <div class="card-meta">
                     <sl-rating label="Rating" readonly value="${item.rating}" precision="0.5"></sl-rating>
@@ -319,7 +336,7 @@ class UIManager {
     createFilters(aggregations) {
         const groups = {};
         
-        Object.entries(CONFIG.facets).forEach(([key, cfg]) => {
+        Object.entries(this.config.facets).forEach(([key, cfg]) => {
             const groupName = cfg.group || '_none';
             if (!groups[groupName]) groups[groupName] = [];
             groups[groupName].push({ key, cfg });
@@ -364,7 +381,9 @@ class UIManager {
         select.id = `filter-${key}`;
         select.multiple = true;
         select.clearable = true;
-        select.placeholder = `Alle ${cfg.title}`;
+        
+        const allPrefix = this.config.ui?.labels?.allPrefix || 'Alle ';
+        select.placeholder = `${allPrefix}${cfg.title}`;
 
         const buckets = aggregation.buckets || [];
         select.innerHTML = buckets.map(b => `
@@ -382,6 +401,8 @@ class UIManager {
         const range = this.state.itemRanges[key];
         if (!range) return;
 
+        const labels = this.config.ui?.labels || {};
+
         const slRange = document.createElement('sl-range');
         slRange.id = `filter-${key}`;
         slRange.min = range.min;
@@ -395,7 +416,7 @@ class UIManager {
         const display = document.createElement('div');
         display.className = 'range-display';
         display.id = `display-${key}`;
-        const prefix = cfg.type === 'range-min' ? 'Mind. ' : 'Max. ';
+        const prefix = cfg.type === 'range-min' ? (labels.rangeMinPrefix || 'Mind. ') : (labels.rangeMaxPrefix || 'Max. ');
         display.innerText = `${prefix}${this.state.filters[key]}${cfg.unit || ''}`;
 
         slRange.addEventListener('sl-input', e => {
@@ -445,7 +466,7 @@ class UIManager {
     }
 
     updateDiscreteFilters(aggregations) {
-        Object.entries(CONFIG.facets).forEach(([key, cfg]) => {
+        Object.entries(this.config.facets).forEach(([key, cfg]) => {
             if (cfg.type === 'discrete') {
                 const select = document.getElementById(`filter-${key}`);
                 if (!select) return;
@@ -465,10 +486,16 @@ class UIManager {
         const total = this.searchService.items.length;
         const current = result.items.length;
 
+        const labels = this.config.ui?.labels || {};
+
         if (current === total) {
-            this.elements.info.innerText = `${total} Produkte`;
+            const text = (labels.resultsCount || '{count} Produkte').replace('{count}', total);
+            this.elements.info.innerText = text;
         } else {
-            this.elements.info.innerText = `${current} Produkte von ${total} gefunden`;
+            const text = (labels.resultsCountFiltered || '{count} Produkte von {total} gefunden')
+                .replace('{count}', current)
+                .replace('{total}', total);
+            this.elements.info.innerText = text;
         }
 
         this.elements.grid.innerHTML = result.items.map(item => this.renderProductCard(item)).join('');
@@ -477,10 +504,11 @@ class UIManager {
     }
 
     showError(message) {
+        const title = this.config.ui?.labels?.errorTitle || 'Fehler';
         this.elements.info.innerHTML = `
             <sl-alert variant="danger" open>
                 <sl-icon slot="icon" name="exclamation-octagon"></sl-icon>
-                <strong>Fehler</strong><br />
+                <strong>${title}</strong><br />
                 ${message}
             </sl-alert>
         `;
@@ -491,11 +519,18 @@ class UIManager {
  * Application Entry Point
  */
 async function init() {
-    const state = new SearchState();
     let ui;
 
     try {
-        const response = await fetch('https://dummyjson.com/products?limit=100');
+        // Load Configuration
+        const configResponse = await fetch('config.json');
+        if (!configResponse.ok) throw new Error('Could not load config.json');
+        const config = await configResponse.json();
+
+        const state = new SearchState(config);
+
+        // Load Data
+        const response = await fetch(config.apiUrl);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         const rawItems = data.products || [];
@@ -503,7 +538,7 @@ async function init() {
         // Pre-process items to support nested facet keys
         const items = rawItems.map(item => {
             const processedItem = { ...item };
-            Object.keys(CONFIG.facets).forEach(key => {
+            Object.keys(config.facets).forEach(key => {
                 if (key.includes('.')) {
                     processedItem[key] = getValueByPath(item, key);
                 }
@@ -511,18 +546,17 @@ async function init() {
             return processedItem;
         });
 
-        const searchService = new SearchService(items);
-        ui = new UIManager(state, searchService);
+        const searchService = new SearchService(items, config);
+        ui = new UIManager(state, searchService, config);
 
         state.calculateRanges(items);
         state.reset();
         ui.update();
     } catch (error) {
         console.error('Initialization error:', error);
-        if (ui) {
-            ui.showError(error.message);
-        } else {
-            document.getElementById('results-info').innerHTML = `Critical Error: ${error.message}`;
+        const infoEl = document.getElementById('results-info');
+        if (infoEl) {
+            infoEl.innerHTML = `Critical Error: ${error.message}`;
         }
     }
 }

@@ -1,0 +1,43 @@
+{
+    "apiUrl": "https://dummyjson.com/products?limit=100",
+    "ui": {
+        "shopName": "PureShop",
+        "title": "Faceted Search - Pure JS",
+        "navLinks": [
+            { "label": "Home", "href": "#" },
+            { "label": "Produkte", "href": "#" },
+            { "label": "Über uns", "href": "#" },
+            { "label": "Kontakt", "href": "#", "variant": "primary", "outline": true }
+        ],
+        "labels": {
+            "filtersTitle": "Filter",
+            "resetButton": "Zurücksetzen",
+            "searchLabel": "Suche",
+            "searchPlaceholder": "Name eingeben...",
+            "rangeMinPrefix": "Mind. ",
+            "rangeMaxPrefix": "Max. ",
+            "allPrefix": "Alle ",
+            "noBrand": "Keine Marke",
+            "resultsCount": "{count} Produkte",
+            "resultsCountFiltered": "{count} Produkte von {total} gefunden",
+            "errorTitle": "Fehler"
+        }
+    },
+    "facets": {
+        "category": { "title": "Kategorie", "type": "discrete" },
+        "brand": { "title": "Marke", "type": "discrete" },
+        "price": { "title": "Preis", "type": "range-dual", "unit": "€", "group": "Preis" },
+        "discountPercentage": { "title": "Rabatt", "type": "range-min", "unit": "%", "group": "Preis" },
+        "rating": { "title": "Bewertung", "type": "range-min" },
+        "dimensions.height": { "title": "Höhe", "type": "range", "unit": "cm", "group": "Abmessungen" },
+        "dimensions.width": { "title": "Breite", "type": "range", "unit": "cm", "group": "Abmessungen" }
+    },
+    "sortOptions": [
+        { "label": "Relevanz", "key": "relevance" },
+        { "label": "Name", "key": "title" },
+        { "label": "Preis", "key": "price" },
+        { "label": "Bewertung", "key": "rating" }
+    ],
+    "searchableFields": ["title", "description", "category", "brand"],
+    "itemsPerPage": 1000
+}
