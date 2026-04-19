@@ -181,10 +181,12 @@ class UIManager {
             sortContainer: document.getElementById('sort-container'),
             logo: document.querySelector('.logo'),
             navLinks: document.querySelector('.nav-links'),
-            filtersTitle: document.querySelector('.filters-header h2')
+            filtersTitle: document.querySelector('.filters-header h2'),
+            themeSwitcher: document.getElementById('theme-switcher')
         };
 
         this.initUI();
+        this.syncThemeUI();
         this.initEventListeners();
         this.renderSortControls();
     }
@@ -216,6 +218,36 @@ class UIManager {
         }
     }
 
+    syncThemeUI() {
+        const theme = localStorage.getItem('theme') || 'light';
+        if (this.elements.themeSwitcher) {
+            const menu = this.elements.themeSwitcher.querySelector('sl-menu');
+            if (menu) {
+                const items = menu.querySelectorAll('sl-menu-item');
+                items.forEach(item => {
+                    item.checked = (item.value === theme);
+                });
+            }
+        }
+    }
+
+    setTheme(theme) {
+        const root = document.documentElement;
+        root.classList.remove('sl-theme-light', 'sl-theme-dark');
+        root.classList.add(`sl-theme-${theme}`);
+        localStorage.setItem('theme', theme);
+
+        if (this.elements.themeSwitcher) {
+            const menu = this.elements.themeSwitcher.querySelector('sl-menu');
+            if (menu) {
+                const items = menu.querySelectorAll('sl-menu-item');
+                items.forEach(item => {
+                    item.checked = (item.value === theme);
+                });
+            }
+        }
+    }
+
     initEventListeners() {
         this.elements.searchInput.addEventListener('sl-input', e => {
             this.state.setQuery(e.target.value);
@@ -227,6 +259,13 @@ class UIManager {
             this.syncUI();
             this.update();
         });
+
+        if (this.elements.themeSwitcher) {
+            this.elements.themeSwitcher.addEventListener('sl-select', e => {
+                const theme = e.detail.item.value;
+                this.setTheme(theme);
+            });
+        }
     }
 
     renderSortControls() {
