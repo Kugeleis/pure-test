@@ -9,8 +9,47 @@
     <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.12.0/dist/shoelace-autoloader.js"></script>
 
     <style>
-        body { font-family: sans-serif; display: flex; gap: 20px; padding: 20px; background: #f4f4f9; }
-        aside { width: 300px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        :root {
+            --header-height: 60px;
+        }
+        body { 
+            font-family: var(--sl-font-sans); 
+            margin: 0;
+            padding: 0;
+            background: #f4f4f9; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            height: var(--header-height);
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--sl-color-primary-600);
+            text-decoration: none;
+        }
+        .nav-links {
+            display: flex;
+            gap: 10px;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            flex: 1;
+        }
+        aside { width: 300px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); height: fit-content; }
         main { flex: 1; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
         .card { background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
@@ -20,28 +59,40 @@
 </head>
 <body>
 
-<aside>
-    <h2>Filter</h2>
-    
-    <sl-input id="search-input" label="Suche" placeholder="Name eingeben..." clearable></sl-input>
+<header>
+    <a href="#" class="logo">ShopName</a>
+    <nav class="nav-links">
+        <sl-button variant="text">Home</sl-button>
+        <sl-button variant="text">Produkte</sl-button>
+        <sl-button variant="text">Über uns</sl-button>
+        <sl-button variant="primary" outline>Kontakt</sl-button>
+    </nav>
+</header>
 
-    <sl-select id="color-filter" label="Farben" multiple clearable placeholder="Alle Farben">
-        <sl-option value="Rot">Rot</sl-option>
-        <sl-option value="Blau">Blau</sl-option>
-        <sl-option value="Grün">Grün</sl-option>
-    </sl-select>
+<div class="container">
+    <aside>
+        <h2>Filter</h2>
+        
+        <sl-input id="search-input" label="Suche" placeholder="Name eingeben..." clearable></sl-input>
 
-    <sl-range id="price-filter" label="Max. Preis" min="0" max="200" value="200" help-text="Budget begrenzen"></sl-range>
-    <div id="price-display">200 €</div>
+        <sl-select id="color-filter" label="Farben" multiple clearable placeholder="Alle Farben">
+            <sl-option value="Rot">Rot</sl-option>
+            <sl-option value="Blau">Blau</sl-option>
+            <sl-option value="Grün">Grün</sl-option>
+        </sl-select>
 
-    <sl-range id="size-filter" label="Max. Größe" min="30" max="60" value="60"></sl-range>
-    <div id="size-display">Größe: 60</div>
-</aside>
+        <sl-range id="price-filter" label="Max. Preis" min="0" max="200" value="200" help-text="Budget begrenzen"></sl-range>
+        <div id="price-display">200 €</div>
 
-<main>
-    <div id="results-info" style="margin-bottom: 10px; font-weight: bold;"></div>
-    <div id="item-grid" class="grid"></div>
-</main>
+        <sl-range id="size-filter" label="Max. Größe" min="30" max="60" value="60"></sl-range>
+        <div id="size-display">Größe: 60</div>
+    </aside>
+
+    <main>
+        <div id="results-info" style="margin-bottom: 10px; font-weight: bold;"></div>
+        <div id="item-grid" class="grid"></div>
+    </main>
+</div>
 
 <script type="module" src="app.js"></script>
 </body>
