@@ -61,7 +61,13 @@ main { flex: 1; }
 .card-meta { font-size: 0.85rem; color: var(--sl-color-neutral-600); }
 .card-price { font-weight: bold; color: var(--sl-color-success-600); font-size: 1.1rem; }
 
-sl-range, sl-select, sl-input { margin-bottom: 20px; display: block; }
+sl-range { 
+    margin-bottom: 20px; 
+    display: block; 
+    --track-color-active: var(--sl-color-primary-600);
+    --track-color-inactive: var(--sl-color-neutral-200);
+    --thumb-size: 20px;
+}
 .filter-group { margin-bottom: 24px; }
 .filter-label { font-weight: 600; margin-bottom: 8px; display: block; font-size: 0.9rem; }
 .range-display { font-size: 0.8rem; color: var(--sl-color-neutral-600); margin-top: 4px; text-align: right; }
