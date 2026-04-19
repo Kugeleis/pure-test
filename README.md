@@ -46,11 +46,14 @@ Define the sorting criteria available to users. The `key` should match a field i
 ## Theming and Styling
 
 ### 1. Changing the Theme (Light/Dark)
-Shoelace supports light and dark themes out of the box. 
+
+Shoelace supports light and dark themes out of the box.
+
 - To change the theme, update the `<link>` in `index.html` to point to the desired theme (e.g., `dark.css` instead of `light.css`).
 - Update the `class` on the `<html>` tag to match: `<html class="sl-theme-dark">`.
 
 ### 2. Customizing Colors
+
 You can easily change the primary color of the entire site by overriding Shoelace's design tokens in `styles.css`. To change the "brand" color, update the primary color palette in the `:root` block:
 
 ```css
@@ -73,6 +76,7 @@ This project includes both unit tests and end-to-end (E2E) tests.
 Unit tests are browser-based and use [Mocha](https://mochajs.org/) and [Chai](https://www.chaijs.com/). They test the core logic of the application (state management and search service).
 
 To run the unit tests:
+
 1. Serve the project root using a web server (e.g., `python3 -m http.server 8000`).
 2. Navigate to `/tests/index.html` in your browser.
 
@@ -81,6 +85,7 @@ To run the unit tests:
 E2E tests use [Playwright](https://playwright.dev/python/docs/intro) (Python version) to verify key user flows like searching, filtering, and theme switching.
 
 To run the E2E tests:
+
 1. Ensure you have the required Python packages installed: `pip install playwright`.
 2. Ensure you have the Playwright browsers installed: `playwright install chromium`.
 3. Start the development server (e.g., `python3 -m http.server 8000`).
