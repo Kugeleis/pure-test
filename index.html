@@ -6,20 +6,43 @@
     <title>Laden...</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/light.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/dark.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.8.1/dist/nouislider.min.css" />
     <link rel="stylesheet" href="styles.css" />
 
     <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/shoelace-autoloader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/nouislider@15.8.1/dist/nouislider.min.js"></script>
 
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.classList.add('sl-theme-' + savedTheme);
+        })();
+    </script>
 </head>
 <body>
 
 <header>
     <a href="#" class="logo"></a>
-    <nav class="nav-links">
-        <!-- Injected from config -->
-    </nav>
+    <div class="header-actions">
+        <nav class="nav-links">
+            <!-- Injected from config -->
+        </nav>
+        <sl-dropdown id="theme-switcher" class="theme-switcher">
+            <sl-button slot="trigger" size="small" circle>
+                <sl-icon name="sun" class="sun-icon"></sl-icon>
+                <sl-icon name="moon" class="moon-icon"></sl-icon>
+            </sl-button>
+            <sl-menu>
+                <sl-menu-item value="light">
+                    <sl-icon slot="prefix" name="sun"></sl-icon> Light
+                </sl-menu-item>
+                <sl-menu-item value="dark">
+                    <sl-icon slot="prefix" name="moon"></sl-icon> Dark
+                </sl-menu-item>
+            </sl-menu>
+        </sl-dropdown>
+    </div>
 </header>
 
 <div class="container">

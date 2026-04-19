@@ -20,7 +20,8 @@
         font-family: var(--sl-font-sans);
         margin: 0;
         padding: 0;
-        background: #f4f4f9;
+        background: var(--sl-color-neutral-50);
+        color: var(--sl-color-neutral-900);
         display: flex;
         flex-direction: column;
         min-height: 100vh;
@@ -28,12 +29,12 @@
 
     header {
         height: var(--header-height);
-        background: white;
+        background: var(--sl-color-neutral-0);
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 0 20px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        box-shadow: var(--sl-shadow-x-small);
         position: sticky;
         top: 0;
         z-index: 100;
@@ -46,9 +47,29 @@
         text-decoration: none;
     }
 
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
     .nav-links {
         display: flex;
         gap: 10px;
+    }
+
+    .theme-switcher .sun-icon {
+        display: block;
+    }
+    .theme-switcher .moon-icon {
+        display: none;
+    }
+
+    .sl-theme-dark .theme-switcher .sun-icon {
+        display: none;
+    }
+    .sl-theme-dark .theme-switcher .moon-icon {
+        display: block;
     }
 
     .container {
@@ -60,10 +81,10 @@
 
     aside {
         width: 300px;
-        background: white;
+        background: var(--sl-color-neutral-0);
         padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        border-radius: var(--sl-border-radius-medium);
+        box-shadow: var(--sl-shadow-small);
         height: fit-content;
     }
 
@@ -78,10 +99,10 @@
     }
 
     .card {
-        background: white;
+        background: var(--sl-color-neutral-0);
         padding: 15px;
-        border-radius: 8px;
-        border: 1px solid #ddd;
+        border-radius: var(--sl-border-radius-medium);
+        border: 1px solid var(--sl-panel-border-color);
         display: flex;
         flex-direction: column;
         gap: 10px;
@@ -91,8 +112,8 @@
         width: 100%;
         height: 150px;
         object-fit: contain;
-        background: #f9f9f9;
-        border-radius: 4px;
+        background: var(--sl-color-neutral-50);
+        border-radius: var(--sl-border-radius-small);
     }
 
     .card-title {
@@ -139,7 +160,7 @@
 
     .noUi-handle {
         border: 1px solid var(--sl-color-neutral-300);
-        background: #fff;
+        background: var(--sl-color-neutral-0);
         cursor: pointer;
         box-shadow: var(--sl-shadow-small);
         border-radius: 50%;
@@ -220,10 +241,10 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
-        background: white;
+        background: var(--sl-color-neutral-0);
         padding: 10px 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        border-radius: var(--sl-border-radius-medium);
+        box-shadow: var(--sl-shadow-x-small);
     }
 
     .results-info {
