@@ -5,7 +5,7 @@ const CONFIG = {
     facets: {
         category: { title: 'Kategorie', type: 'discrete' },
         brand: { title: 'Marke', type: 'discrete' },
-        price: { title: 'Preis', type: 'range', unit: '€' },
+        price: { title: 'Preis', type: 'range-dual', unit: '€' },
         rating: { title: 'Bewertung', type: 'range' }
     }
 };
@@ -44,8 +44,9 @@ async function init() {
             searchableFields: ['title', 'description', 'category', 'brand']
         });
 
+        // Auto-detect ranges
         Object.entries(CONFIG.facets).forEach(([key, cfg]) => {
-            if (cfg.type === 'range') {
+            if (cfg.type === 'range' || cfg.type === 'range-dual') {
                 const values = allItems
                     .map(item => parseFloat(item[key]))
                     .filter(v => !isNaN(v));
@@ -55,7 +56,12 @@ async function init() {
                         min: Math.floor(Math.min(...values)),
                         max: Math.ceil(Math.max(...values))
                     };
-                    state.filters[key] = itemRanges[key].max;
+                    
+                    if (cfg.type === 'range-dual') {
+                        state.filters[key] = [itemRanges[key].min, itemRanges[key].max];
+                    } else {
+                        state.filters[key] = itemRanges[key].max;
+                    }
                 }
             }
         });
@@ -76,16 +82,19 @@ async function init() {
 function renderFilters(searchResult) {
     if (!searchResult?.data?.aggregations) return;
 
-    // First initial render or re-render if needed
     if (dynamicFiltersContainer.children.length === 0) {
         Object.entries(CONFIG.facets).forEach(([key, cfg]) => {
             const group = document.createElement('div');
             group.className = 'filter-group';
             
+            const label = document.createElement('label');
+            label.className = 'filter-label';
+            label.innerText = cfg.title;
+            group.appendChild(label);
+
             if (cfg.type === 'discrete') {
                 const select = document.createElement('sl-select');
                 select.id = `filter-${key}`;
-                select.label = cfg.title;
                 select.multiple = true;
                 select.clearable = true;
                 select.placeholder = `Alle ${cfg.title}`;
@@ -102,17 +111,58 @@ function renderFilters(searchResult) {
                 group.appendChild(select);
             } else if (cfg.type === 'range' && itemRanges[key]) {
                 const range = itemRanges[key];
-                group.innerHTML = `
-                    <label class="filter-label">${cfg.title}</label>
-                    <sl-range id="filter-${key}" min="${range.min}" max="${range.max}" value="${range.max}" step="0.1"></sl-range>
-                    <div class="range-display" id="display-${key}">${range.max} ${cfg.unit || ''}</div>
-                `;
-                group.querySelector('sl-range').addEventListener('sl-input', e => {
+                const slRange = document.createElement('sl-range');
+                slRange.id = `filter-${key}`;
+                slRange.min = range.min;
+                slRange.max = range.max;
+                slRange.value = range.max;
+                slRange.step = 0.1;
+
+                const display = document.createElement('div');
+                display.className = 'range-display';
+                display.id = `display-${key}`;
+                display.innerText = `${range.max} ${cfg.unit || ''}`;
+
+                slRange.addEventListener('sl-input', e => {
                     const val = parseFloat(e.target.value);
-                    document.getElementById(`display-${key}`).innerText = `${val} ${cfg.unit || ''}`;
+                    display.innerText = `${val} ${cfg.unit || ''}`;
                     state.filters[key] = val; 
                     update();
                 });
+                group.appendChild(slRange);
+                group.appendChild(display);
+            } else if (cfg.type === 'range-dual' && itemRanges[key]) {
+                const range = itemRanges[key];
+                const sliderDiv = document.createElement('div');
+                sliderDiv.id = `filter-${key}`;
+                group.appendChild(sliderDiv);
+
+                const display = document.createElement('div');
+                display.className = 'range-display';
+                display.id = `display-${key}`;
+                display.innerText = `${range.min}${cfg.unit || ''} - ${range.max}${cfg.unit || ''}`;
+                group.appendChild(display);
+
+                // Initialize noUiSlider after a small delay to ensure element is in DOM
+                setTimeout(() => {
+                    window.noUiSlider.create(sliderDiv, {
+                        start: [range.min, range.max],
+                        connect: true,
+                        range: {
+                            'min': range.min,
+                            'max': range.max
+                        },
+                        step: 1
+                    });
+
+                    sliderDiv.noUiSlider.on('update', (values) => {
+                        const min = Math.round(values[0]);
+                        const max = Math.round(values[1]);
+                        display.innerText = `${min}${cfg.unit || ''} - ${max}${cfg.unit || ''}`;
+                        state.filters[key] = [min, max];
+                        update();
+                    });
+                }, 10);
             }
             dynamicFiltersContainer.appendChild(group);
         });
@@ -126,7 +176,6 @@ function renderFilters(searchResult) {
                 const buckets = searchResult.data.aggregations[key].buckets || [];
                 const currentValues = state.filters[key] || [];
                 
-                // Keep the selection while updating option text counts
                 select.innerHTML = buckets.map(b => `
                     <sl-option value="${b.key}" ${currentValues.includes(b.key) ? 'selected' : ''}>${b.key} (${b.doc_count})</sl-option>
                 `).join('');
@@ -158,10 +207,16 @@ function update() {
     });
 
     let filteredItems = searchResult.data.items || [];
-    Object.entries(rangeFilters).forEach(([key, maxVal]) => {
+    Object.entries(rangeFilters).forEach(([key, val]) => {
         filteredItems = filteredItems.filter(item => {
-            const val = parseFloat(item[key]);
-            return !isNaN(val) ? val <= maxVal : true;
+            const itemVal = parseFloat(item[key]);
+            if (isNaN(itemVal)) return true;
+            
+            if (Array.isArray(val)) { // Dual range [min, max]
+                return itemVal >= val[0] && itemVal <= val[1];
+            } else { // Single range (max value)
+                return itemVal <= val;
+            }
         });
     });
 

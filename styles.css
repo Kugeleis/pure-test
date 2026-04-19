@@ -68,6 +68,37 @@ sl-range {
     --track-color-inactive: var(--sl-color-neutral-200);
     --thumb-size: 20px;
 }
+
+/* noUiSlider Styling */
+.noUi-target {
+    background: var(--sl-color-neutral-200);
+    border: none;
+    box-shadow: none;
+    height: 6px;
+    margin: 30px 10px 15px 10px;
+}
+.noUi-connect {
+    background: var(--sl-color-primary-600);
+}
+.noUi-handle {
+    border: 1px solid var(--sl-color-neutral-300);
+    background: #fff;
+    cursor: pointer;
+    box-shadow: var(--sl-shadow-small);
+    border-radius: 50%;
+    width: 18px !important;
+    height: 18px !important;
+    right: -9px !important;
+    top: -7px !important;
+}
+.noUi-handle::before, .noUi-handle::after {
+    display: none;
+}
+.noUi-handle:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--sl-color-primary-300);
+}
+
 .filter-group { margin-bottom: 24px; }
 .filter-label { font-weight: 600; margin-bottom: 8px; display: block; font-size: 0.9rem; }
 .range-display { font-size: 0.8rem; color: var(--sl-color-neutral-600); margin-top: 4px; text-align: right; }
