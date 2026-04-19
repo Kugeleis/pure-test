@@ -64,3 +64,24 @@ You can easily change the primary color of the entire site by overriding Shoelac
 
 We recommend using a tool like the [Shoelace Palette Generator](https://shoelace.style/tokens/color#customizing-colors) to generate the full set of variables for your custom color.
 
+## Testing
+
+This project includes both unit tests and end-to-end (E2E) tests.
+
+### Unit Tests
+
+Unit tests are browser-based and use [Mocha](https://mochajs.org/) and [Chai](https://www.chaijs.com/). They test the core logic of the application (state management and search service).
+
+To run the unit tests:
+1. Serve the project root using a web server (e.g., `python3 -m http.server 8000`).
+2. Navigate to `/tests/index.html` in your browser.
+
+### End-to-End (E2E) Tests
+
+E2E tests use [Playwright](https://playwright.dev/python/docs/intro) (Python version) to verify key user flows like searching, filtering, and theme switching.
+
+To run the E2E tests:
+1. Ensure you have the required Python packages installed: `pip install playwright`.
+2. Ensure you have the Playwright browsers installed: `playwright install chromium`.
+3. Start the development server (e.g., `python3 -m http.server 8000`).
+4. Run the test script: `python tests/e2e/test_app.py`.
