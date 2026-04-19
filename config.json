@@ -37,8 +37,8 @@
         }
     },
     "facets": {
-        "category": { "title": "Kategorie", "type": "discrete" },
-        "brand": { "title": "Marke", "type": "discrete" },
+        "category": { "title": "Kategorie", "type": "discrete", "conjunction": false },
+        "brand": { "title": "Marke", "type": "discrete", "conjunction": false },
         "price": { "title": "Preis", "type": "range-dual", "unit": "€", "group": "Preis" },
         "discountPercentage": { "title": "Rabatt", "type": "range-min", "unit": "%", "group": "Preis" },
         "rating": { "title": "Bewertung", "type": "range-min" },

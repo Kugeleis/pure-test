@@ -87,7 +87,11 @@ class SearchService {
             aggregations: Object.fromEntries(
                 Object.entries(config.facets).map(([key, cfg]) => [
                     key, 
-                    { title: cfg.title, size: 100 }
+                    { 
+                        title: cfg.title, 
+                        size: 100,
+                        conjunction: cfg.conjunction !== undefined ? cfg.conjunction : false
+                    }
                 ])
             ),
             searchableFields: config.searchableFields
