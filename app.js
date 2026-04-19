@@ -379,8 +379,15 @@ class UIManager {
 
     update() {
         const result = this.searchService.search(this.state);
+        const total = this.searchService.items.length;
+        const current = result.items.length;
 
-        this.elements.info.innerText = `${result.items.length} Produkte gefunden`;
+        if (current === total) {
+            this.elements.info.innerText = `${total} Produkte`;
+        } else {
+            this.elements.info.innerText = `${current} Produkte von ${total} gefunden`;
+        }
+
         this.elements.grid.innerHTML = result.items.map(item => this.renderProductCard(item)).join('');
 
         this.renderFilters(result.aggregations);
