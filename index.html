@@ -1,61 +1,14 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" class="sl-theme-light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Faceted Search - No NPM</title>
     
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.12.0/dist/themes/light.css" />
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.12.0/dist/shoelace-autoloader.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/light.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/shoelace-autoloader.js"></script>
 
-    <style>
-        :root {
-            --header-height: 60px;
-        }
-        body { 
-            font-family: var(--sl-font-sans); 
-            margin: 0;
-            padding: 0;
-            background: #f4f4f9; 
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        header {
-            height: var(--header-height);
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--sl-color-primary-600);
-            text-decoration: none;
-        }
-        .nav-links {
-            display: flex;
-            gap: 10px;
-        }
-        .container {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-            flex: 1;
-        }
-        aside { width: 300px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); height: fit-content; }
-        main { flex: 1; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
-        .card { background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
-        sl-range, sl-select, sl-input { margin-bottom: 20px; display: block; }
-        h2 { font-size: 1.2rem; margin-top: 0; }
-    </style>
 </head>
 <body>
 
@@ -70,22 +23,10 @@
 </header>
 
 <div class="container">
-    <aside>
+    <aside id="filters-container">
         <h2>Filter</h2>
-        
-        <sl-input id="search-input" label="Suche" placeholder="Name eingeben..." clearable></sl-input>
-
-        <sl-select id="color-filter" label="Farben" multiple clearable placeholder="Alle Farben">
-            <sl-option value="Rot">Rot</sl-option>
-            <sl-option value="Blau">Blau</sl-option>
-            <sl-option value="Grün">Grün</sl-option>
-        </sl-select>
-
-        <sl-range id="price-filter" label="Max. Preis" min="0" max="200" value="200" help-text="Budget begrenzen"></sl-range>
-        <div id="price-display">200 €</div>
-
-        <sl-range id="size-filter" label="Max. Größe" min="30" max="60" value="60"></sl-range>
-        <div id="size-display">Größe: 60</div>
+        <sl-input id="search-input" label="Suche" placeholder="Name eingeben..." clearable style="margin-bottom: 24px;"></sl-input>
+        <div id="dynamic-filters"></div>
     </aside>
 
     <main>
