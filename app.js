@@ -8,11 +8,20 @@ const CONFIG = {
         category: { title: 'Kategorie', type: 'discrete' },
         brand: { title: 'Marke', type: 'discrete' },
         price: { title: 'Preis', type: 'range-dual', unit: '€' },
-        rating: { title: 'Bewertung', type: 'range-min' }
+        rating: { title: 'Bewertung', type: 'range-min' },
+        'dimensions.height': { title: 'Höhe', type: 'range', unit: 'cm' },
+        'dimensions.width': { title: 'Breite', type: 'range', unit: 'cm' }
     },
     searchableFields: ['title', 'description', 'category', 'brand'],
     itemsPerPage: 1000
 };
+
+/**
+ * Utility to get value from nested object using dot notation
+ */
+function getValueByPath(obj, path) {
+    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+}
 
 /**
  * State Management
@@ -377,7 +386,18 @@ async function init() {
         const response = await fetch('https://dummyjson.com/products?limit=100');
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        const items = data.products || [];
+        const rawItems = data.products || [];
+
+        // Pre-process items to support nested facet keys
+        const items = rawItems.map(item => {
+            const processedItem = { ...item };
+            Object.keys(CONFIG.facets).forEach(key => {
+                if (key.includes('.')) {
+                    processedItem[key] = getValueByPath(item, key);
+                }
+            });
+            return processedItem;
+        });
 
         const searchService = new SearchService(items);
         ui = new UIManager(state, searchService);
