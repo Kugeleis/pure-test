@@ -13,6 +13,12 @@ const CONFIG = {
         'dimensions.height': { title: 'Höhe', type: 'range', unit: 'cm', group: 'Abmessungen' },
         'dimensions.width': { title: 'Breite', type: 'range', unit: 'cm', group: 'Abmessungen' }
     },
+    sortOptions: [
+        { label: 'Name', key: 'title' },
+        { label: 'Preis', key: 'price' },
+        { label: 'Bewertung', key: 'rating' },
+        { label: 'Höhe', key: 'dimensions.height' },
+    ],
     searchableFields: ['title', 'description', 'category', 'brand'],
     itemsPerPage: 1000
 };
@@ -32,6 +38,8 @@ class SearchState {
         this.query = '';
         this.filters = {};
         this.itemRanges = {};
+        this.sortBy = CONFIG.sortOptions[0].key;
+        this.sortOrder = 'asc'; // 'asc' or 'desc'
     }
 
     calculateRanges(items) {
@@ -54,6 +62,9 @@ class SearchState {
     reset() {
         this.query = '';
         this.filters = {};
+        this.sortBy = CONFIG.sortOptions[0].key;
+        this.sortOrder = 'asc';
+
         Object.entries(CONFIG.facets).forEach(([key, cfg]) => {
             if (cfg.type === 'discrete') {
                 this.filters[key] = [];
@@ -79,6 +90,11 @@ class SearchState {
 
     setFilter(key, value) {
         this.filters[key] = value;
+    }
+
+    setSort(key, order) {
+        if (key !== undefined) this.sortBy = key;
+        if (order !== undefined) this.sortOrder = order;
     }
 }
 
@@ -138,6 +154,25 @@ class SearchService {
             });
         });
 
+        // Manual Sorting
+        if (state.sortBy && state.sortBy !== 'relevance') {
+            filteredItems.sort((a, b) => {
+                const valA = getValueByPath(a, state.sortBy);
+                const valB = getValueByPath(b, state.sortBy);
+                
+                let comparison = 0;
+                if (typeof valA === 'string' && typeof valB === 'string') {
+                    comparison = valA.localeCompare(valB);
+                } else {
+                    const numA = parseFloat(valA) || 0;
+                    const numB = parseFloat(valB) || 0;
+                    comparison = numA - numB;
+                }
+                
+                return state.sortOrder === 'desc' ? -comparison : comparison;
+            });
+        }
+
         return {
             items: filteredItems,
             aggregations: searchResult.data.aggregations
@@ -158,10 +193,12 @@ class UIManager {
             info: document.getElementById('results-info'),
             filtersContainer: document.getElementById('dynamic-filters'),
             searchInput: document.getElementById('search-input'),
-            resetButton: document.getElementById('reset-button')
+            resetButton: document.getElementById('reset-button'),
+            sortContainer: document.getElementById('sort-container')
         };
 
         this.initEventListeners();
+        this.renderSortControls();
     }
 
     initEventListeners() {
@@ -177,11 +214,57 @@ class UIManager {
         });
     }
 
+    renderSortControls() {
+        if (!this.elements.sortContainer) return;
+
+        const select = document.createElement('sl-select');
+        select.id = 'sort-by-select';
+        select.value = this.state.sortBy;
+        select.innerHTML = CONFIG.sortOptions.map(opt => `
+            <sl-option value="${opt.key}">${opt.label}</sl-option>
+        `).join('');
+
+        select.addEventListener('sl-change', e => {
+            this.state.setSort(e.target.value);
+            this.update();
+        });
+
+        const orderBtn = document.createElement('sl-button');
+        orderBtn.id = 'sort-order-btn';
+        orderBtn.className = 'sort-order-btn';
+        orderBtn.variant = 'default';
+        orderBtn.innerHTML = this.getSortIcon();
+
+        orderBtn.addEventListener('click', () => {
+            const nextOrder = this.state.sortOrder === 'asc' ? 'desc' : 'asc';
+            this.state.setSort(undefined, nextOrder);
+            orderBtn.innerHTML = this.getSortIcon();
+            this.update();
+        });
+
+        this.elements.sortContainer.innerHTML = '';
+        this.elements.sortContainer.appendChild(select);
+        this.elements.sortContainer.appendChild(orderBtn);
+    }
+
+    getSortIcon() {
+        return this.state.sortOrder === 'asc' 
+            ? '<sl-icon name="sort-up"></sl-icon>' 
+            : '<sl-icon name="sort-down"></sl-icon>';
+    }
+
     syncUI() {
         // Search input
         if (this.elements.searchInput) {
             this.elements.searchInput.value = this.state.query;
         }
+
+        // Sort controls
+        const sortSelect = document.getElementById('sort-by-select');
+        if (sortSelect) sortSelect.value = this.state.sortBy;
+        
+        const sortOrderBtn = document.getElementById('sort-order-btn');
+        if (sortOrderBtn) sortOrderBtn.innerHTML = this.getSortIcon();
 
         // Filters
         Object.entries(CONFIG.facets).forEach(([key, cfg]) => {

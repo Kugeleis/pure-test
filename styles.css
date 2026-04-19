@@ -142,7 +142,32 @@ h2 { font-size: 1.2rem; margin: 0; }
     margin-bottom: 24px;
 }
 
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    background: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
 .results-info {
-    margin-bottom: 10px;
     font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.sort-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sort-container sl-select {
+    width: 200px;
+}
+
+.sort-order-btn::part(base) {
+    padding: 0 8px;
 }
