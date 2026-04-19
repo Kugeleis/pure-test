@@ -21,6 +21,19 @@
             "resultsCount": "{count} Produkte",
             "resultsCountFiltered": "{count} Produkte von {total} gefunden",
             "errorTitle": "Fehler"
+        },
+        "productCard": {
+            "image": "thumbnail",
+            "title": "title",
+            "price": "price",
+            "priceUnit": "€",
+            "rating": "rating",
+            "meta": [
+                { "key": "brand", "fallback": "noBrand" },
+                { "key": "category" },
+                { "key": "dimensions.height" },
+                { "key": "dimensions.width" }
+            ]
         }
     },
     "facets": {

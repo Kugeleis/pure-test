@@ -307,17 +307,36 @@ class UIManager {
 
     renderProductCard(item) {
         const { ui } = this.config;
-        const noBrandLabel = ui?.labels?.noBrand || 'Keine Marke';
+        const cardCfg = ui?.productCard;
+        if (!cardCfg) return '';
+
+        const labels = ui?.labels || {};
+        
+        // Resolve values
+        const title = getValueByPath(item, cardCfg.title) || '';
+        const image = getValueByPath(item, cardCfg.image) || '';
+        const price = getValueByPath(item, cardCfg.price) || 0;
+        const priceUnit = cardCfg.priceUnit || '';
+        const rating = getValueByPath(item, cardCfg.rating) || 0;
+
+        // Resolve Meta Fields
+        const metaText = (cardCfg.meta || []).map(m => {
+            let val = getValueByPath(item, m.key);
+            if (!val && m.fallback) {
+                val = labels[m.fallback] || m.fallback;
+            }
+            return val;
+        }).filter(Boolean).join(' | ');
 
         return `
             <div class="card">
-                <img src="${item.thumbnail}" alt="${item.title}" loading="lazy">
-                <div class="card-title">${item.title}</div>
-                <div class="card-meta">${item.brand || noBrandLabel} | ${item.category}</div>
-                <div class="card-price">${item.price}€</div>
+                <img src="${image}" alt="${title}" loading="lazy">
+                <div class="card-title">${title}</div>
+                <div class="card-meta">${metaText}</div>
+                <div class="card-price">${price}${priceUnit}</div>
                 <div class="card-meta">
-                    <sl-rating label="Rating" readonly value="${item.rating}" precision="0.5"></sl-rating>
-                    <small>(${item.rating})</small>
+                    <sl-rating label="Rating" readonly value="${rating}" precision="0.5"></sl-rating>
+                    <small>(${rating})</small>
                 </div>
             </div>
         `;
