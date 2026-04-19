@@ -7,7 +7,8 @@ const CONFIG = {
     facets: {
         category: { title: 'Kategorie', type: 'discrete' },
         brand: { title: 'Marke', type: 'discrete' },
-        price: { title: 'Preis', type: 'range-dual', unit: '€' },
+        price: { title: 'Preis', type: 'range-dual', unit: '€', group: 'Preis' },
+        discountPercentage: { title: 'Rabatt', type: 'range-min', unit: '%', group: 'Preis' },
         rating: { title: 'Bewertung', type: 'range-min' },
         'dimensions.height': { title: 'Höhe', type: 'range', unit: 'cm', group: 'Abmessungen' },
         'dimensions.width': { title: 'Breite', type: 'range', unit: 'cm', group: 'Abmessungen' }
